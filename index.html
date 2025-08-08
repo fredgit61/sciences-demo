@@ -1,109 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Sciences Duolingo Démo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background: #f5f7fa;
-            color: #333;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        .question {
-            background: #fff;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        }
-        .question h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .answers button {
-            display: block;
-            width: 100%;
-            margin: 5px 0;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: #ecf0f1;
-            cursor: pointer;
-        }
-        .answers button:hover {
-            background: #d0e6f9;
-        }
-        .correct {
-            background-color: #2ecc71 !important;
-            color: white;
-        }
-        .wrong {
-            background-color: #e74c3c !important;
-            color: white;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sciences Démo</title>
 </head>
 <body>
-
-<h1>Démo Sciences - Style Duolingo</h1>
-
-<div class="question" data-answer="1">
-    <h2>1. Quelle est la dérivée de f(x) = x² + 3x ?</h2>
-    <div class="answers">
-        <button>A. 2x</button>
-        <button>B. 2x + 3</button>
-        <button>C. x²</button>
-        <button>D. x + 3</button>
-    </div>
-</div>
-
-<div class="question" data-answer="1">
-    <h2>2. Une voiture de 1 000 kg subit une force de 2 000 N. Quelle est son accélération ?</h2>
-    <div class="answers">
-        <button>A. 0,5 m/s²</button>
-        <button>B. 2 m/s²</button>
-        <button>C. 20 m/s²</button>
-        <button>D. 200 m/s²</button>
-    </div>
-</div>
-
-<div class="question" data-answer="0">
-    <h2>3. On lance un dé. Quelle est la probabilité d’obtenir un multiple de 3 ?</h2>
-    <div class="answers">
-        <button>A. 1/2</button>
-        <button>B. 1/3</button>
-        <button>C. 1/6</button>
-        <button>D. 2/3</button>
-    </div>
-</div>
-
-<script>
-    document.querySelectorAll('.question').forEach((question, qIndex) => {
-        const correctIndex = parseInt(question.dataset.answer);
-        const buttons = question.querySelectorAll('button');
-        buttons.forEach((btn, index) => {
-            btn.addEventListener('click', () => {
-                buttons.forEach(b => b.disabled = true);
-                if(index === correctIndex) {
-                    btn.classList.add('correct');
-                } else {
-                    btn.classList.add('wrong');
-                    buttons[correctIndex].classList.add('correct');
-                }
-            });
-        });
-    });
-</script>
-
+  <h1>Sciences — Démo Duolingo</h1>
+  <p>Cette application est prête à être utilisée sur iPhone en mode PWA.</p>
 </body>
 </html>

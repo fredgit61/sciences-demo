@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sciences — Démo style Duolingo</title>
+<style>
+  :root { --bg:#ffffff; --fg:#111; --muted:#666; --card:#f3f3f3; --ok:#0a7d32; --bad:#b00020; --acc:#2563eb; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1115; --fg:#f5f7fa; --muted:#b4b7bd; --card:#1a1f29; --ok:#3ecf8e; --bad:#ff6b6b; --acc:#7aa2ff; }
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial,sans-serif}
+  header{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid #0001;padding:12px 16px;display:flex;gap:12px;align-items:center}
+  header h1{font-size:1.05rem;margin:0;font-weight:700;letter-spacing:.3px}
+  header nav{margin-left:auto;display:flex;gap:10px}
+  header button{background:var(--card);border:none;border-radius:999px;padding:8px 14px;color:var(--fg);cursor:pointer}
+  header button.primary{background:var(--acc);color:#fff}
+  main{max-width:900px;margin:0 auto;padding:18px 16px 64px}
+  .card{background:var(--card);border-radius:14px;padding:18px;margin:12px 0}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .grow{flex:1 1 280px}
+  .kpi{font-size:.9rem;color:var(--muted)} .big{font-size:1.6rem;font-weight:800}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#0001;margin-right:6px;font-size:.85rem}
+  .btn{background:var(--acc);color:#fff;border:none;padding:12px 16px;border-radius:12px;cursor:pointer;font-weight:700}
+  .btn.secondary{background:var(--card);color:var(--fg)} .btn:disabled{opacity:.6;cursor:not-allowed}
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .choice{background:#0001;padding:12px;border-radius:12px;cursor:pointer;border:2px solid transparent}
+  .choice:hover{border-color:#0003} .choice.selected{border-color:var(--acc)}
+  .status{margin-top:12px} .ok{color:var(--ok)} .bad{color:var(--bad)}
+  input[type="text"]{width:100%;padding:12px;border-radius:12px;border:1px solid #0003;background:transparent;color:var(--fg)}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid #0001;display:flex;gap:10px;padding:10px 12px}
+  .footer .grow{display:flex;gap:10px}
+  .bar{height:10px;background:#0002;border-radius:999px;overflow:hidden}
+  .bar>div{height:100%;background:var(--acc);width:0%;transition:width .3s}
+  .small{font-size:.85rem} .tag{font-size:.8rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sciences — Démo (Terminale)</h1>
+  <nav>
+    <button id="dashboardBtn" class="primary">Tableau de bord</button>
+    <button id="lessonBtn">Leçon</button>
+  </nav>
+</header>
+<main>
+  <section id="dashboardView">
+    <div class="row">
+      <div class="card grow">
+        <div class="kpi">Objectif quotidien</div>
+        <div class="big"><span id="minutesToday">0</span> / 30 min</div>
+        <div class="bar" style="margin-top:8px;"><div id="goalBar"></div></div>
+        <div class="small" style="margin-top:8px;">Astuce : 5–10 exercices suffisent pour 30 minutes si vous lisez les explications.</div>
+      </div>
+      <div class="card grow">
+        <div class="kpi">Série (streak)</div>
+        <div class="big"><span id="streak">0</span> jours 🔥</div>
+        <div class="small" style="margin-top:8px;">Pratiquez un peu chaque jour pour maintenir la série.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kpi">Par où commencer ?</div>
+      <div class="row" style="margin-top:8px;">
+        <div class="grow">
+          <div class="pill">Maths</div><div class="pill">Physique</div><div class="pill">Chimie</div>
+          <div class="small" style="margin-top:8px;">La démo commence par un mix Maths + Physique, puis un exercice de Chimie.</div>
+        </div>
+        <div><button class="btn" onclick="startLesson()">Commencer la leçon</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kpi">Votre progression</div>
+      <div class="small">Questions terminées : <span id="doneCount">0</span> / <span id="totalCount">0</span></div>
+      <div class="bar" style="margin-top:8px;"><div id="progressBar"></div></div>
+    </div>
+  </section>
+
+  <section id="lessonView" style="display:none;">
+    <div class="card">
+      <div class="tag" id="topicTag">Sujet</div>
+      <h2 id="questionTitle" style="margin-top:6px;">Question</h2>
+      <div id="questionBody"></div>
+      <div id="answerUI" style="margin-top:12px;"></div>
+      <div class="status" id="status"></div>
+      <div id="explanation" class="small" style="margin-top:10px; display:none;"></div>
+    </div>
+    <div class="footer">
+      <div class="grow">
+        <button class="btn secondary" onclick="prevQuestion()">Précédent</button>
+        <button class="btn" id="validateBtn" onclick="validate()">Valider</button>
+      </div>
+      <div style="min-width:180px; text-align:right;">
+        <div class="small">Temps d'étude aujourd'hui</div>
+        <div><span id="elapsed">00:00</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const LESSON=[
+ {id:"m1",topic:"Maths · Combinatoire",title:"Combien d'anagrammes distincts pour le mot 'STAT' ?",type:"mcq",choices:["4","6","12","24"],correctIndex:1,explanation:"Il y a 4 lettres dont 2 T et 2 S identiques: 4!/(2!·2!) = 6."},
+ {id:"m2",topic:"Maths · Probabilités",title:"On lance 5 pièces équilibrées. Probabilité d'obtenir exactement 3 faces ?",type:"numeric",correctValue:"10/32",altCorrect:["0.3125","5C3/32","10/32","5C3/2^5"],explanation:"C(5,3)·(1/2)^5 = 10/32 = 0,3125."},
+ {id:"p1",topic:"Physique · Cinématique",title:"Une voiture accélère uniformément de 0 à 20 m/s en 5 s. Accélération moyenne ?",type:"mcq",choices:["2 m/s²","4 m/s²","5 m/s²","10 m/s²"],correctIndex:1,explanation:"a = Δv/Δt = (20 - 0)/5 = 4 m/s²."},
+ {id:"p2",topic:"Physique · Énergie",title:"Un objet de 2 kg tombe de 5 m (g=9,8). Énergie potentielle perdue ?",type:"numeric",correctValue:"98",altCorrect:["98","98.0","≈98","environ 98"],unit:"J",explanation:"E_p = m·g·h = 2×9,8×5 = 98 J (perdue et convertie notamment en énergie cinétique)."},
+ {id:"c1",topic:"Chimie · Entropie",title:"Quel signe pour ΔS° lors de la fusion de la glace à 0 °C ?",type:"mcq",choices:["ΔS° < 0","ΔS° = 0","ΔS° > 0"],correctIndex:2,explanation:"Le passage solide → liquide augmente le désordre : ΔS° > 0."}
+];
+
+const storeKey="demo_sciences_state_v1";
+const state=JSON.parse(localStorage.getItem(storeKey)||"{}");
+if(!state.progress) state.progress={index:0,done:{},minutesToday:0,lastStudyDate:null,streak:0,secondsToday:0};
+const progress=state.progress;
+
+function fmtTime(s){const m=Math.floor(s/60),r=s%60;return (m<10?"0":"")+m+":"+(r<10?"0":"")+r;}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+(function updateStreakOnStart(){
+  const today=todayStr(), last=progress.lastStudyDate;
+  if(!last) return;
+  const dt=(new Date(today)-new Date(last))/(1000*3600*24);
+  if(dt>1) progress.streak=0;
+})();
+
+const dashboardView=document.getElementById("dashboardView");
+const lessonView=document.getElementById("lessonView");
+document.getElementById("dashboardBtn").onclick=()=>showDashboard();
+document.getElementById("lessonBtn").onclick=()=>startLesson();
+
+function showDashboard(){dashboardView.style.display="";lessonView.style.display="none";renderDashboard();}
+function startLesson(){dashboardView.style.display="none";lessonView.style.display="";renderQuestion();startTimer();}
+function renderDashboard(){
+  document.getElementById("minutesToday").textContent=Math.floor(progress.secondsToday/60);
+  document.getElementById("streak").textContent=progress.streak||0;
+  document.getElementById("doneCount").textContent=Object.keys(progress.done).length;
+  document.getElementById("totalCount").textContent=LESSON.length;
+  document.getElementById("goalBar").style.width=Math.min(100,(progress.secondsToday/60)/30*100)+"%";
+  document.getElementById("progressBar").style.width=(Object.keys(progress.done).length/LESSON.length*100)+"%";
+}
+showDashboard();
+
+let tickHandle=null;
+function renderQuestion(){
+  const i=Math.min(progress.index,LESSON.length-1);
+  const q=LESSON[i];
+  document.getElementById("topicTag").textContent=q.topic;
+  document.getElementById("questionTitle").textContent=q.title;
+  document.getElementById("questionBody").innerHTML="";
+  document.getElementById("status").textContent="";
+  document.getElementById("explanation").style.display="none";
+  document.getElementById("explanation").textContent="";
+  document.getElementById("validateBtn").disabled=false;
+
+  const ui=document.getElementById("answerUI");
+  ui.innerHTML="";
+  if(q.type==="mcq"){
+    const list=document.createElement("div"); list.className="choices";
+    q.choices.forEach((c,idx)=>{
+      const item=document.createElement("div");
+      item.className="choice"; item.textContent=c;
+      item.onclick=()=>{list.querySelectorAll(".choice").forEach(x=>x.classList.remove("selected")); item.classList.add("selected"); ui.dataset.selectedIndex=idx;};
+      list.appendChild(item);
+    });
+    ui.appendChild(list);
+  }else{
+    const inp=document.createElement("input");
+    inp.type="text"; inp.placeholder=q.unit?`Réponse (${q.unit})`:"Réponse";
+    ui.appendChild(inp);
+  }
+}
+
+function validate(){
+  const i=Math.min(progress.index,LESSON.length-1);
+  const q=LESSON[i];
+  const status=document.getElementById("status");
+  const expl=document.getElementById("explanation");
+  let ok=false;
+
+  if(q.type==="mcq"){
+    const idx=+document.getElementById("answerUI").dataset.selectedIndex;
+    if(Number.isFinite(idx)) ok=(idx===q.correctIndex);
+  }else{
+    const val=document.querySelector("#answerUI input")?.value?.trim();
+    if(val){
+      const canon=s=>s.replace(/\s/g,'').replace(',', '.').toLowerCase();
+      const target=canon(q.correctValue);
+      const given=canon(val);
+      const alts=(q.altCorrect||[]).map(canon);
+      ok=(given===target)||alts.includes(given);
+    }
+  }
+
+  if(ok){
+    status.innerHTML=`<span class="ok">✅ Correct</span>`;
+    progress.done[q.id]=true;
+    if(progress.index<LESSON.length-1) progress.index+=1;
+  }else{
+    status.innerHTML=`<span class="bad">❌ Incorrect</span>`;
+  }
+  expl.style.display="block";
+  expl.textContent=q.explanation;
+  // créditer ~2 min par validation (lecture explications comprise)
+  progress.secondsToday+=120;
+  const today=todayStr();
+  if(progress.lastStudyDate!==today){
+    if(progress.lastStudyDate){
+      const dt=(new Date(today)-new Date(progress.lastStudyDate))/(1000*3600*24);
+      progress.streak=(dt===1)?(progress.streak||0)+1:1;
+    } else { progress.streak=1; }
+    progress.lastStudyDate=today;
+  }
+  localStorage.setItem(storeKey, JSON.stringify(state));
+  renderDashboard();
+}
+
+function prevQuestion(){ if(progress.index>0) progress.index-=1; renderQuestion(); }
+
+function startTimer(){
+  const start=Date.now();
+  if(tickHandle) clearInterval(tickHandle);
+  tickHandle=setInterval(()=>{const s=Math.floor((Date.now()-start)/1000); document.getElementById("elapsed").textContent=fmtTime(s);},1000);
+}
+</script>
+</body>
+</html>
